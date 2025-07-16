@@ -37,6 +37,7 @@
     />
     <TaskList
       :tasks="tasks"
+      :categories="categories"
       @edit="onEdit"
       @delete="onDelete"
       @complete="onComplete"

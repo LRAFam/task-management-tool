@@ -19,7 +19,10 @@ class TaskController extends Controller
             $query->where('category_id', $request->category_id);
         }
         if ($request->has('completed')) {
-            $query->where('completed', $request->completed);
+            $completed = filter_var($request->completed, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($completed !== null) {
+                $query->where('completed', $completed);
+            }
         }
 
         $tasks = $query->orderByDesc('deadline')->get();

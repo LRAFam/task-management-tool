@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the index first, then the column
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropIndex(['category']); // Drop the index first
-            $table->dropColumn('category'); // Then remove the old string category column
+            // Add the new category_id column
+            $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
         });
     }
 
@@ -24,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->string('category')->nullable()->index(); // Restore old category column
+            $table->dropForeign(['category_id']);
+            $table->dropColumn('category_id');
         });
     }
 };
