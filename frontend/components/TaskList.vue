@@ -8,7 +8,7 @@
             <input type="checkbox" :checked="task.completed" @change="$emit('complete', task, !task.completed)" class="mr-2" />
             <span :class="{'line-through text-gray-400': task.completed, 'font-semibold': !task.completed}">{{ task.title }}</span>
             <span v-if="task.deadline" class="ml-4 text-xs text-gray-500">Due: {{ task.deadline }}</span>
-            <span v-if="task.category" class="ml-2 px-2 py-1 bg-gray-200 rounded text-xs">{{ task.category }}</span>
+            <span v-if="task.category" class="ml-2 px-2 py-1 rounded text-xs text-white" :style="{ backgroundColor: task.category.color || '#6B7280' }">{{ task.category.name }}</span>
           </div>
           <div class="text-gray-600 text-sm mb-1">{{ task.description }}</div>
         </div>

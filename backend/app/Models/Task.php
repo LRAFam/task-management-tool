@@ -19,7 +19,7 @@ class Task extends Model
         'title',
         'description',
         'deadline',
-        'category',
+        'category_id',
         'completed',
     ];
 
@@ -29,5 +29,13 @@ class Task extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the category that owns the task.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

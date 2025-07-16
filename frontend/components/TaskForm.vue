@@ -14,7 +14,12 @@
     </div>
     <div>
       <label class="block mb-1" for="category">Category</label>
-      <input v-model="form.category" id="category" type="text" class="w-full border rounded px-3 py-2" />
+      <select v-model="form.category_id" id="category" class="w-full border rounded px-3 py-2">
+        <option :value="undefined">No Category</option>
+        <option v-for="category in categories" :key="category.id" :value="category.id">
+          {{ category.name }}
+        </option>
+      </select>
     </div>
     <div v-if="error" class="text-red-600">{{ error }}</div>
     <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700" :disabled="loading">
@@ -26,8 +31,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, onMounted } from 'vue'
 import type { Task } from '~/composables/useTasks'
+import { useCategories } from '~/composables/useCategories'
 
 const props = defineProps<{
   modelValue?: Partial<Task>
@@ -38,11 +44,17 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['submit', 'cancel'])
 
+const { categories, fetchCategories } = useCategories()
+
 const form = reactive<Partial<Task>>({
   title: '',
   description: '',
   deadline: '',
-  category: '',
+  category_id: undefined,
+})
+
+onMounted(() => {
+  fetchCategories()
 })
 
 watch(() => props.modelValue, (val) => {

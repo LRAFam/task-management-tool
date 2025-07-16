@@ -11,7 +11,12 @@
       </div>
     </div>
     <div class="mb-4 flex flex-wrap gap-2">
-      <input v-model="filters.category" placeholder="Filter by category" class="border rounded px-3 py-2" />
+      <select v-model="filters.category_id" class="border rounded px-3 py-2">
+        <option :value="undefined">All Categories</option>
+        <option v-for="category in categories" :key="category.id" :value="category.id">
+          {{ category.name }}
+        </option>
+      </select>
       <select v-model="filters.completed" class="border rounded px-3 py-2">
         <option :value="undefined">All</option>
         <option :value="false">Incomplete</option>
@@ -44,12 +49,14 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTasks, type Task } from '~/composables/useTasks'
 import { useAuth } from '~/composables/useAuth'
+import { useCategories } from '~/composables/useCategories'
 import TaskForm from '~/components/TaskForm.vue'
 import TaskList from '~/components/TaskList.vue'
 
 const { user, token, logout } = useAuth()
 const router = useRouter()
 const { tasks, fetchTasks, createTask, updateTask, deleteTask, completeTask, loading, error } = useTasks()
+const { categories, fetchCategories } = useCategories()
 
 const showForm = ref(false)
 const isEditMode = ref(false)
@@ -57,17 +64,18 @@ const defaultTask: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'> = 
   title: '',
   description: '',
   deadline: '',
-  category: '',
+  category_id: undefined,
   completed: false,
 }
 const editTask = ref<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>>({ ...defaultTask })
-const filters = reactive<{ category?: string; completed?: boolean }>({ category: '', completed: undefined })
+const filters = reactive<{ category_id?: number; completed?: boolean }>({ category_id: undefined, completed: undefined })
 
 onMounted(() => {
   if (!user.value || !token.value) {
     router.push('/auth/login')
     return
   }
+  fetchCategories()
   fetchTasks()
 })
 
@@ -88,7 +96,7 @@ const onEdit = (task: Task) => {
     title: task.title || '',
     description: task.description || '',
     deadline: task.deadline || '',
-    category: task.category || '',
+    category_id: task.category_id,
     completed: task.completed,
   }
   isEditMode.value = true

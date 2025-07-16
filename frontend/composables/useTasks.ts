@@ -7,7 +7,12 @@ export interface Task {
   title: string
   description?: string
   deadline?: string
-  category?: string
+  category_id?: number
+  category?: {
+    id: number
+    name: string
+    color?: string
+  }
   completed: boolean
   created_at: string
   updated_at: string
@@ -23,7 +28,7 @@ export function useTasks() {
   const loading = loadingState()
   const error = errorState()
 
-  const fetchTasks = async (filters: { category?: string; completed?: boolean } = {}) => {
+  const fetchTasks = async (filters: { category_id?: number; completed?: boolean } = {}) => {
     if (!token.value) {
       error.value = 'No authentication token available'
       return
@@ -33,7 +38,7 @@ export function useTasks() {
     error.value = null
     try {
       const params = new URLSearchParams()
-      if (filters.category) params.append('category', filters.category)
+      if (filters.category_id) params.append('category_id', String(filters.category_id))
       if (filters.completed !== undefined) params.append('completed', String(filters.completed))
       const res = await $fetch<Task[]>(`http://localhost:8000/api/tasks?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token.value}` },
@@ -51,7 +56,7 @@ export function useTasks() {
     }
   }
 
-  const createTask = async (data: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const createTask = async (data: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'category'>) => {
     if (!token.value) {
       error.value = 'No authentication token available'
       return
@@ -74,7 +79,7 @@ export function useTasks() {
     }
   }
 
-  const updateTask = async (id: number, data: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
+  const updateTask = async (id: number, data: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'category'>>) => {
     if (!token.value) {
       error.value = 'No authentication token available'
       return

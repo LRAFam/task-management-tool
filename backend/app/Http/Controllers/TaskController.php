@@ -13,10 +13,10 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Task::with('user')->where('user_id', $request->user()->id);
+        $query = Task::with(['user', 'category'])->where('user_id', $request->user()->id);
 
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
         if ($request->has('completed')) {
             $query->where('completed', $request->completed);
@@ -35,11 +35,11 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'deadline' => 'nullable|date',
-            'category' => 'nullable|string|max:100',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
         $validated['user_id'] = $request->user()->id;
         $task = Task::create($validated);
-        $task->load('user'); // Eager load user
+        $task->load(['user', 'category']); // Eager load user and category
         return response()->json($task, 201);
     }
 
@@ -51,7 +51,7 @@ class TaskController extends Controller
         if ($task->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        $task->load('user');
+        $task->load(['user', 'category']);
         return response()->json($task);
     }
 
@@ -67,11 +67,11 @@ class TaskController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'deadline' => 'nullable|date',
-            'category' => 'nullable|string|max:100',
+            'category_id' => 'nullable|exists:categories,id',
             'completed' => 'sometimes|boolean',
         ]);
         $task->update($validated);
-        $task->load('user');
+        $task->load(['user', 'category']);
         return response()->json($task);
     }
 
