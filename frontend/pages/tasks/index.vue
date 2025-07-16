@@ -1,8 +1,14 @@
 <template>
   <div class="max-w-2xl mx-auto py-8">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold">My Tasks</h2>
-      <button @click="showForm = true; isEditMode = false; editTask = { ...defaultTask }" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">New Task</button>
+      <div>
+        <h2 class="text-2xl font-bold">My Tasks</h2>
+        <p class="text-sm text-gray-600">Welcome, {{ user?.name }}</p>
+      </div>
+      <div class="flex gap-2">
+        <button @click="showForm = true; isEditMode = false; editTask = { ...defaultTask }" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">New Task</button>
+        <button @click="handleLogout" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Logout</button>
+      </div>
     </div>
     <div class="mb-4 flex flex-wrap gap-2">
       <input v-model="filters.category" placeholder="Filter by category" class="border rounded px-3 py-2" />
@@ -35,10 +41,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTasks, type Task } from '~/composables/useTasks'
+import { useAuth } from '~/composables/useAuth'
 import TaskForm from '~/components/TaskForm.vue'
 import TaskList from '~/components/TaskList.vue'
 
+const { user, token, logout } = useAuth()
+const router = useRouter()
 const { tasks, fetchTasks, createTask, updateTask, deleteTask, completeTask, loading, error } = useTasks()
 
 const showForm = ref(false)
@@ -54,6 +64,10 @@ const editTask = ref<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
 const filters = reactive<{ category?: string; completed?: boolean }>({ category: '', completed: undefined })
 
 onMounted(() => {
+  if (!user.value || !token.value) {
+    router.push('/auth/login')
+    return
+  }
   fetchTasks()
 })
 
@@ -97,5 +111,10 @@ const onCancel = () => {
   showForm.value = false
   isEditMode.value = false
   editTask.value = { ...defaultTask }
+}
+
+const handleLogout = async () => {
+  await logout()
+  router.push('/auth/login')
 }
 </script> 

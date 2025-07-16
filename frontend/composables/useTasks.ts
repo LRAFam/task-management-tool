@@ -24,6 +24,11 @@ export function useTasks() {
   const error = errorState()
 
   const fetchTasks = async (filters: { category?: string; completed?: boolean } = {}) => {
+    if (!token.value) {
+      error.value = 'No authentication token available'
+      return
+    }
+    
     loading.value = true
     error.value = null
     try {
@@ -36,12 +41,22 @@ export function useTasks() {
       tasks.value = res
     } catch (err: any) {
       error.value = err.data?.message || 'Failed to fetch tasks'
+      // If unauthorized, clear the token
+      if (err.status === 401) {
+        const { logout } = useAuth()
+        logout()
+      }
     } finally {
       loading.value = false
     }
   }
 
   const createTask = async (data: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!token.value) {
+      error.value = 'No authentication token available'
+      return
+    }
+    
     loading.value = true
     error.value = null
     try {
@@ -60,6 +75,11 @@ export function useTasks() {
   }
 
   const updateTask = async (id: number, data: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
+    if (!token.value) {
+      error.value = 'No authentication token available'
+      return
+    }
+    
     loading.value = true
     error.value = null
     try {
@@ -79,6 +99,11 @@ export function useTasks() {
   }
 
   const deleteTask = async (id: number) => {
+    if (!token.value) {
+      error.value = 'No authentication token available'
+      return
+    }
+    
     loading.value = true
     error.value = null
     try {

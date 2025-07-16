@@ -13,8 +13,19 @@ interface AuthResponse {
   user?: User
 }
 
-const userState = () => useState<User | null>('user', () => null)
-const tokenState = () => useState<string | null>('token', () => null)
+const userState = () => useState<User | null>('user', () => {
+  if (process.client) {
+    const stored = localStorage.getItem('user')
+    return stored ? JSON.parse(stored) : null
+  }
+  return null
+})
+const tokenState = () => useState<string | null>('token', () => {
+  if (process.client) {
+    return localStorage.getItem('token')
+  }
+  return null
+})
 
 export function useAuth() {
   const user = userState()
@@ -51,6 +62,12 @@ export function useAuth() {
       if (res.token && res.user) {
         token.value = res.token
         user.value = res.user
+        
+        // Persist to localStorage
+        if (process.client) {
+          localStorage.setItem('token', res.token)
+          localStorage.setItem('user', JSON.stringify(res.user))
+        }
       }
       return res
     } catch (err: any) {
@@ -70,6 +87,12 @@ export function useAuth() {
       })
       user.value = null
       token.value = null
+      
+      // Clear localStorage
+      if (process.client) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
     } catch (err: any) {
       error.value = err.data?.message || 'Logout failed'
     } finally {
